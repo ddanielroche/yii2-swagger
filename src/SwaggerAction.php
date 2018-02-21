@@ -13,6 +13,8 @@ namespace light\swagger;
 
 use Yii;
 use yii\base\Action;
+use yii\base\InvalidArgumentException;
+use yii\web\AssetBundle;
 use yii\web\Response;
 
 /**
@@ -25,6 +27,7 @@ use yii\web\Response;
  *         'doc' => [
  *             'class' => 'light\swagger\SwaggerAction',
  *             'restUrl' => Url::to(['site/api'], true)
+ *             'additionalAsset' => 'app\modules\api\assets\SwaggerUIAssetOverrides',
  *         ]
  *     ];
  * }
@@ -40,15 +43,17 @@ class SwaggerAction extends Action
      * @var array The OAuth configration
      */
     public $oauthConfiguration = [];
-    
+
+    public $additionalAsset;
+
     public function run()
     {
         Yii::$app->getResponse()->format = Response::FORMAT_HTML;
-        
+
         $this->controller->layout = false;
-        
+
         $view = $this->controller->getView();
-        
+
         if (empty($this->oauthConfiguration)) {
             $this->oauthConfiguration = [
                 'clientId' => 'your-client-id',
@@ -59,10 +64,24 @@ class SwaggerAction extends Action
                 'additionalQueryStringParams' => [],
             ];
         }
-        
+
         return $view->renderFile(__DIR__ . '/index.php', [
             'rest_url' => $this->restUrl,
             'oauthConfig' => $this->oauthConfiguration,
         ], $this->controller);
+    }
+
+    protected function beforeRun()
+    {
+        if ($this->additionalAsset != null) {
+            $additionalAsset = $this->additionalAsset;
+            if (class_exists($additionalAsset)) {
+                $additionalAsset::register($this->controller->view);
+            } else {
+                throw new InvalidArgumentException("Not valid class");
+            }
+        }
+
+        return parent::beforeRun();
     }
 }
