@@ -15,7 +15,7 @@
     "zircote/swagger-php": "3.x-dev",
     "bower-asset/swagger-ui": "^3.0"
   },
-  "minimum-stability": "dev",
+  "minimum-stability": "stable",
   "autoload": {
     "psr-4": {
       "light\\swagger\\": "src"
